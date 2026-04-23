@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEVA HACKER | SYSTEM ACCESS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            color: #00FF41;
+            font-family: 'Fira Code', monospace;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .overlay {
+            position: relative;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.85);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 2px solid #00FF41;
+            box-shadow: inset 0 0 20px #00FF41;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 1px solid #00FF41;
+            padding-bottom: 10px;
+            text-shadow: 0 0 10px #00FF41;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            gap: 20px;
+            margin-top: 20px;
+            flex-grow: 1;
+        }
+
+        .tool-list {
+            border: 1px solid #00FF41;
+            padding: 10px;
+            background: rgba(0, 40, 0, 0.3);
+        }
+
+        .tool-item {
+            padding: 8px;
+            margin: 5px 0;
+            cursor: pointer;
+            border: 1px transparent;
+            transition: 0.3s;
+        }
+
+        .tool-item:hover {
+            background: #00FF41;
+            color: black;
+            font-weight: bold;
+        }
+
+        #terminal {
+            background: rgba(0, 20, 0, 0.9);
+            border: 1px solid #00FF41;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .status-panel {
+            border: 1px solid #00FF41;
+            padding: 10px;
+            font-size: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            border: 1px solid #00FF41;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: #00FF41;
+            transition: width 0.1s;
+        }
+
+        .blink { animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+
+        .glitch {
+            animation: glitch 1s linear infinite;
+        }
+
+        @keyframes glitch {
+            2%, 64% { transform: translate(2px,0) skew(0deg); }
+            4%, 60% { transform: translate(-2px,0) skew(0deg); }
+            62% { transform: translate(0,0) skew(5deg); }
+        }
+    </style>
+</head>
+<body onclick="startAmbience()">
+
+    <canvas id="matrix-bg"></canvas>
+
+    <div class="overlay">
+        <header>
+            <h1 class="glitch">DEVA HACKER v4.0 - SİSTEM ERİŞİMİ</h1>
+            <p>DURUM: <span style="color: #00FF41;">BAĞLI</span> | KONUM: HATAY/DÖRTYOL | IP: 192.168.1.162</p>
+        </header>
+
+        <div class="main-content">
+            <aside class="tool-list">
+                <h3>ARAÇLAR</h3>
+                <div class="tool-item" onclick="runTool('Brute Force')">➤ Brute Force</div>
+                <div class="tool-item" onclick="runTool('SQL Injection')">➤ SQL Injection</div>
+                <div class="tool-item" onclick="runTool('DDoS Attack')">➤ DDoS Attack</div>
+                <div class="tool-item" onclick="runTool('Phishing Cam')">➤ Phishing Cam</div>
+                <div class="tool-item" onclick="runTool('Mainframe Bypass')">➤ Mainframe Bypass</div>
+                <div class="tool-item" onclick="runTool('Satellite Hijack')">➤ Satellite Hijack</div>
+                <div class="tool-item" onclick="runTool('Decryption')">➤ Şifre Çözücü</div>
+            </aside>
+
+            <section id="terminal">
+                <div id="logs">Sisteme hoş geldin, Enes. Başlamak için bir araç seç...<br>_</div>
+            </section>
+
+            <aside class="status-panel">
+                <h3>SİSTEM VERİLERİ</h3>
+                <p>CPU: %84</p>
+                <p>RAM: 128GB</p>
+                <p>UPLINK: 1.2 GBPS</p>
+                <div class="progress-bar"><div id="p-fill" class="progress-fill"></div></div>
+                <p id="p-text">İşlem Bekleniyor...</p>
+                <hr border-color="#00FF41">
+                <p style="color: red;" class="blink">UYARI: FIREWALL TESPİT EDİLDİ</p>
+            </section>
+        </div>
+    </div>
+
+    <audio id="beep" src="https://www.soundjay.com/communication/sounds/beep-07.mp3"></audio>
+    <audio id="bg-music" loop src="https://www.soundtrack7.com/music/cyber-punk-loop.mp3"></audio>
+
+    <script>
+        // Matrix Arkaplan Efekti
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0F0";
+            ctx.font = fontSize + "px arial";
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 33);
+
+        // Terminal Fonksiyonları
+        const logs = document.getElementById('logs');
+        const pFill = document.getElementById('p-fill');
+        const pText = document.getElementById('p-text');
+        const beep = document.getElementById('beep');
+
+        function runTool(toolName) {
+            beep.play();
+            logs.innerHTML += `<br><span style="color:white">[INFO]</span> ${toolName} başlatılıyor...`;
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    logs.innerHTML += `<br><span style="color:#00FF41">[SUCCESS]</span> ${toolName} tamamlandı. Veriler sızdırıldı.`;
+                }
+                pFill.style.width = progress + "%";
+                pText.innerText = `${toolName}: %${Math.floor(progress)}`;
+                logs.scrollTop = logs.scrollHeight;
+            }, 100);
+        }
+
+        function startAmbience() {
+            // Müzik linki çalışmazsa sessiz kalabilir, gerçek bir mp3 linki eklenebilir.
+            document.getElementById('bg-music').play().catch(() => {});
+        }
+
+        // Rastgele hata mesajları
+        setInterval(() => {
+            const errors = [
+                "Bypass bypass bypass...",
+                "Paket alınıyor: 0x8821",
+                "Proxy katmanı değiştiriliyor...",
+                "Hedef sisteme sızılıyor...",
+                "Veri tabanı şifreleme anahtarı bulundu!"
+            ];
+            logs.innerHTML += `<br><span style="color:yellow">>></span> ` + errors[Math.floor(Math.random() * errors.length)];
+            logs.scrollTop = logs.scrollHeight;
+        }, 3000);
+
+    </script>
+</body>
+</html>
